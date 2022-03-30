@@ -9,6 +9,7 @@ import AddReferral from './pages/add_referral';
 import Dashboard from './pages/dashboard';
 import Form from './pages/form';
 import Signup from './pages/signup';
+import Signin from './pages/signin';
 
 // ReactDOM.render(<App />, document.getElementById('root'));
 const rootElement = document.getElementById('root');
@@ -17,7 +18,8 @@ render(
     <Navbar />
     <Routes>
       <Route path="/" element={<App />} />
-      <Route path="signup" element = {<Signup/>} />
+      <Route path="signin" element={<Signin />} />
+      <Route path="signup" element={<Signup />} />
       <Route path="dashboard" element={<Dashboard />} />
       <Route path="add_referral" element={<AddReferral />} />
     </Routes>

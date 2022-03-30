@@ -8,17 +8,41 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { addReferral } from '../service/referral_service';
+import { BASE_URL } from '../helpers/constants.helper';
 
 const theme = createTheme();
 
 export default function AddReferral() {
-  const [firstName, setFirstName] = React.useState('');
-  const [lastName, setLastName] = React.useState('');
+  const [name, setName] = React.useState('');
   const [mobile, setMobile] = React.useState('');
   const [email, setEmail] = React.useState('');
+  const [companyName, setCompanyName] = React.useState('');
 
   const handleSubmit = () => {
-    addReferral(`${firstName} ${lastName}`, email, mobile);
+
+    //addReferral(`${firstName} ${lastName}`, email, mobile);
+
+    const data = {
+      fullName: name,
+      email: email,
+      mobile: mobile,
+      companyName: companyName
+    };
+
+    const options = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    };
+
+    const userMail = localStorage.getItem('userEmail');
+
+    fetch(`${BASE_URL}/api/customer/signup/${userMail}`, options)
+      .then((response) => {
+        response.json();
+      })
+      .then((data1) => { console.log(data1); });
+
   };
 
   return (
@@ -37,29 +61,17 @@ export default function AddReferral() {
             Add referral
           </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12}>
               <TextField
                 autoComplete="given-name"
-                name="firstName"
+                name="name"
                 required
                 fullWidth
-                id="firstName"
-                label="First Name"
+                id="name"
+                label="Enter your name"
                 autoFocus
-                value={firstName}
-                onChange={(ev) => setFirstName(ev.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                id="lastName"
-                label="Last Name"
-                name="lastName"
-                autoComplete="family-name"
-                value={lastName}
-                onChange={(ev) => setLastName(ev.target.value)}
+                value={name}
+                onChange={(ev) => setName(ev.target.value)}
               />
             </Grid>
             <Grid item xs={12}>
@@ -72,6 +84,18 @@ export default function AddReferral() {
                 autoComplete="email"
                 value={email}
                 onChange={(ev) => setEmail(ev.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                required
+                fullWidth
+                id="companyName"
+                label="Company Name"
+                name="companyName"
+                autoComplete="companyName"
+                value={companyName}
+                onChange={(ev) => setCompanyName(ev.target.value)}
               />
             </Grid>
             <Grid item xs={12}>

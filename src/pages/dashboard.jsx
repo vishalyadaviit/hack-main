@@ -10,6 +10,8 @@ import Paper from '@mui/material/Paper';
 import { useEffect } from 'react';
 //import { listReferrals } from '../service/referral_service';
 import axios from 'axios';
+import { BASE_URL } from '../helpers/constants.helper';
+import { getUserEmail } from '../helpers/common.helper';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -35,39 +37,41 @@ export default function Dashboard() {
   const [rows, setRows] = React.useState([]);
   const [hydrated, setHydrated] = React.useState(false);
 
+  const userMail = localStorage.getItem('userEmail');
+
   useEffect(() => {
-    axios.get('https://1156-114-143-13-58.ngrok.io/api/users/dashboard/user@gmail.com')
-    .then(res => {
-      setRows(res.data);
-    });
+    axios.get(`${BASE_URL}/api/users/dashboard/${getUserEmail()}`)
+      .then(res => {
+        setRows(res.data);
+      });
     setHydrated(true);
   }, []);
 
   return (
     <div className="dashboard_wrapper">
       {hydrated && (
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 700 }} aria-label="customized table">
-          <TableHead>
-            <TableRow>
-              <StyledTableCell>Name</StyledTableCell>
-              <StyledTableCell>Email</StyledTableCell>
-              <StyledTableCell>Bizcoin</StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.map((row) => (
-              <StyledTableRow key={row.customerName}>
-                <StyledTableCell component="th" scope="row">
-                  {row.customerName}
-                </StyledTableCell>
-                <StyledTableCell>{row.customerEmail}</StyledTableCell>
-                <StyledTableCell>{row.bizCoin}</StyledTableCell>
-              </StyledTableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 700 }} aria-label="customized table">
+            <TableHead>
+              <TableRow>
+                <StyledTableCell>Name</StyledTableCell>
+                <StyledTableCell>Email</StyledTableCell>
+                <StyledTableCell>Bizcoin</StyledTableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {rows.map((row) => (
+                <StyledTableRow key={row.customerName}>
+                  <StyledTableCell component="th" scope="row">
+                    {row.customerName}
+                  </StyledTableCell>
+                  <StyledTableCell>{row.customerEmail}</StyledTableCell>
+                  <StyledTableCell>{row.bizCoin}</StyledTableCell>
+                </StyledTableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
     </div>
   );

@@ -8,6 +8,7 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Navsupp from '../components/navsup/navsupp';
+import { BASE_URL } from '../helpers/constants.helper';
 
 const theme = createTheme();
 export default function Signup() {
@@ -26,11 +27,12 @@ export default function Signup() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     };
-   
-    fetch('https://1156-114-143-13-58.ngrok.io/api/users/signup', options)
+
+    fetch(`${BASE_URL}/api/users/signup`, options)
       .then((response) => {
         response.json();
         localStorage.setItem('userEmail', mailId);
+        localStorage.setItem('islogin', true);
       })
       .then((data1) => { console.log(data1); });
 

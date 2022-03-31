@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { styled } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
@@ -11,7 +12,7 @@ import { useEffect } from 'react';
 //import { listReferrals } from '../service/referral_service';
 import axios from 'axios';
 import { BASE_URL } from '../helpers/constants.helper';
-import { getUserEmail } from '../helpers/common.helper';
+import { getStoredUser } from '../helpers/common.helper';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -37,13 +38,58 @@ export default function Dashboard() {
   const [rows, setRows] = React.useState([]);
   const [hydrated, setHydrated] = React.useState(false);
 
-  const userMail = localStorage.getItem('userEmail');
+  const handleChange = (index, e) => {
+    setRows(prevState => {
+      prevState[index].bizCoin = e.target.value
+      return [...prevState];
+    })
+  };
+
+  const onboardClient = (rowData) => {
+    const storedUser = getStoredUser();
+
+    axios.post(`${BASE_URL}/api/admin/${storedUser.email}/onboard/clients`, {
+      "bizCoin": parseInt(rowData.bizCoin),
+      status: "Onboard",
+      "userRewardId": rowData.userRewardId
+    }).then(res => {
+      console.log(`res`)
+      console.log(res)
+    });
+  }
+
+  const updateClientStatus = (rowData, status) => {
+    const storedUser = getStoredUser();
+    axios.post(`${BASE_URL}/api/admin/${storedUser.email}/initiate/clients/status`, {
+      "bizCoin": 0,
+      status,
+      "userRewardId": rowData.userRewardId
+    }).then(res => {
+      if (res && res.data) {
+        fetchDashboardData();
+      }
+    });
+  }
+
+  const storedUser = getStoredUser();
+  let dashboardUrl = '';
+  if (storedUser.userType === "Admin-1") {
+    dashboardUrl = `${BASE_URL}/api/admin/${storedUser.email}/find-all/fresh/clients`
+  } else if (storedUser.userType === "Admin-2") {
+    dashboardUrl = `${BASE_URL}/api/admin/${storedUser.email}/find-all/initiated/clients`
+  } else {
+    dashboardUrl = `${BASE_URL}/api/users/dashboard/${storedUser.email}`
+  }
+
+  const fetchDashboardData = () => {
+    console.log(`fetchDashboardData`)
+    axios.get(dashboardUrl).then(res => {
+      setRows(res.data);
+    });
+  }
 
   useEffect(() => {
-    axios.get(`${BASE_URL}/api/users/dashboard/${getUserEmail()}`)
-      .then(res => {
-        setRows(res.data);
-      });
+    fetchDashboardData();
     setHydrated(true);
   }, []);
 
@@ -57,16 +103,46 @@ export default function Dashboard() {
                 <StyledTableCell>Name</StyledTableCell>
                 <StyledTableCell>Email</StyledTableCell>
                 <StyledTableCell>Bizcoin</StyledTableCell>
+                <StyledTableCell>Action</StyledTableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map((row) => (
+              {rows && Array.isArray(rows) && rows.map((row, index) => (
                 <StyledTableRow key={row.customerName}>
                   <StyledTableCell component="th" scope="row">
                     {row.customerName}
                   </StyledTableCell>
                   <StyledTableCell>{row.customerEmail}</StyledTableCell>
-                  <StyledTableCell>{row.bizCoin}</StyledTableCell>
+                  <StyledTableCell>
+                    {
+                      storedUser.userType === "Admin-2" ?
+                        <TextField
+                          required
+                          id='bizCoin'
+                          // label='Email Address'
+                          placeholder='Bizcoin'
+                          name='bizCoin'
+                          autoComplete='off'
+                          size="small"
+                          value={row.bizCoin}
+                          onChange={(e) => handleChange(index, e)}
+                        />
+                        : row.bizCoin
+                    }
+                  </StyledTableCell>
+                  <StyledTableCell>
+
+                    {
+                      (storedUser.userType === "Admin-1") ?
+                        (<div>
+                          <button type='button' className="btn" onClick={() => { updateClientStatus(row, "Initiate") }}>Initiate</button>
+                          <button type='button' className="btn ml-3" onClick={() => { updateClientStatus(row, "Drop") }}>Drop</button>
+                        </div>)
+                        : (storedUser.userType === "Admin-2")
+                          ? <button type='button' className="btn" onClick={() => { onboardClient(row, "Onboard") }}>Onboard</button>
+                          : ""
+                    }
+                  </StyledTableCell>
                 </StyledTableRow>
               ))}
             </TableBody>
